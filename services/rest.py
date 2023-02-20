@@ -7,53 +7,49 @@
 
 import requests
 
-def getPurpleAirSensorData(sensor_index):
+def getPurpleAirSensorData(sensor_index, api_key):
 
+  
     # Define the API endpoint for retrieving the X-API-Key
-    key_url = "https://api.purpleair.com/v1/keys"
-    api_key = ""
+    key_url = 'https://api.purpleair.com/v1/sensors/'+ str(sensor_index)
     key_data = ""
 
+    headers = {
+        "X-API-Key": api_key
+    }
+
     # Make the GET request to the API to retrieve the X-API-Key
-    key_response = requests.get(key_url)
-
+    response = requests.get(key_url, headers = headers)
+    
     # We successfully generated a token
-    if key_response.status_code == 200:
-        key_data = key_response.json()
-        api_key = key_data['key']
-    
-    print("key -> " + str(api_key))
-    # Define the API endpoint
-    data_url =  "https://api.purpleair.com/v1/sensors/:" + sensor_index
-
+    if response.status_code == 200:
+        data = response.json()
+        print("response: " + str(data))
     
 
-    # Define the headers with the X-API-Key parameter
+def getAllPurpleAirSensorData(api_key):
+    # Define the API endpoint for retrieving sensor metadata
+    metadata_url = 'https://api.purpleair.com/v1/sensors?location=Raleigh,NC&location_type=0&fields=sensor_index,name,latitude,longitude,pm2.5'
+
     headers = {
         "X-API-Key": api_key
     }
 
     # Make the GET request to the API and include the headers
-    data_response = requests.get(data_url, headers=headers)
+    response = requests.get(metadata_url, headers=headers)
 
     # Check if the request was successful
-    if data_response.status_code == 200:
+    if response.status_code == 200:
         # Parse the JSON data from the response
-        data = data_response.json()
+        data = response.json()
 
-        # Extract the desired information from the data
-        for sensor in data['results']:
-            print("Sensor index:", sensor['sensor_index'])
-            print("Sensor Icon:", sensor['icon'])
-            print("Sensor Name:", sensor['name'])
-            print("Location:", sensor['location_type'])
-            print("---")
+        # Iterate through the list of sensors and retrieve the data for each sensor
+        for sensor in data['data']:
+            getPurpleAirSensorData(sensor[0], api_key)
     else:
         # Print an error message if the request was unsuccessful
-        print("Failed to retrieve data. Response code:", data_response.status_code)
-
-
+        print("Failed to retrieve sensor metadata. Response code:", response.status_code)
 
 ##  MAIN
-sensor_index = '31619'
-getPurpleAirSensorData(sensor_index)
+api_key = "B276397E-A658-11ED-B6F4-42010A800007"
+getAllPurpleAirSensorData(api_key)
