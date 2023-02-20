@@ -51,5 +51,5 @@ def getAllPurpleAirSensorData(api_key):
         print("Failed to retrieve sensor metadata. Response code:", response.status_code)
 
 ##  MAIN
-api_key = "B276397E-A658-11ED-B6F4-42010A800007"
+api_key = ""
 getAllPurpleAirSensorData(api_key)
