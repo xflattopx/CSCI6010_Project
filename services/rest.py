@@ -1,12 +1,15 @@
-## CSCI6010
 ## Team Dynasty
 ## Chase Moore, Denise Bruce, Adam Wade Foster
 
 ## Purple Air -> https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180
 ## Air Now -> https://fire.airnow.gov/
-
+## Sensor List: 
 import requests
 
+def inputData(inputDictionaryADB):
+    sensor_index = list(inputDictionaryADB.values())
+    return sensor_index
+    
 def getPurpleAirSensorData(sensor_index, api_key):
 
   
@@ -25,9 +28,11 @@ def getPurpleAirSensorData(sensor_index, api_key):
     if response.status_code == 200:
         data = response.json()
         print("response: " + str(data))
+ 
+
     
 
-def getAllPurpleAirSensorData(api_key):
+def getAllPurpleAirSensorData(api_key,input):
     # Define the API endpoint for retrieving sensor metadata
     metadata_url = 'https://api.purpleair.com/v1/sensors?location=Raleigh,NC&location_type=0&fields=sensor_index,name,latitude,longitude,pm2.5'
 
@@ -43,13 +48,19 @@ def getAllPurpleAirSensorData(api_key):
         # Parse the JSON data from the response
         data = response.json()
 
-        # Iterate through the list of sensors and retrieve the data for each sensor
-        for sensor in data['data']:
-            getPurpleAirSensorData(sensor[0], api_key)
+        # Iterate through the list of sensors and re
+        # trieve the data for each sensor
+        data = input
+        for sensor in data:  
+            getPurpleAirSensorData(sensor, api_key)
     else:
         # Print an error message if the request was unsuccessful
         print("Failed to retrieve sensor metadata. Response code:", response.status_code)
 
 ##  MAIN
-api_key = ""
-getAllPurpleAirSensorData(api_key)
+api_key = "B276397E-A658-11ED-B6F4-42010A800007"
+# ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
+inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
+ "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469, "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
+input = inputData(inputDictionaryADB)
+getAllPurpleAirSensorData(api_key, input)
