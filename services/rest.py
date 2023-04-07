@@ -8,7 +8,7 @@
 ## Air Now -> https://fire.airnow.gov/
 
 ## Todo 4/6 
-#Make a loop to implement the new API end point for historical data.  
+#*Make a loop to implement the new API end point for historical data.  
 #Convert the timestamp from EPOCH time
 #get 365 days of data for all purple air sensors
 #Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
@@ -25,6 +25,17 @@ import pandas as pd
 import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
+import calendar
+
+#User start date converted from month day year 
+def user_start_time( ):
+    start_year= int(input ("Enter the Start year: ")) 
+    start_month= int(input("Enter Start Month: "))
+    start_day= int(input("Enter Start Day: "))
+    dt = datetime(start_year, start_month, start_day, 0, 0, 0)
+    return (calendar.timegm(dt.timetuple()))
+    
+    
 
 def get_start_time(time_stamp):
     # Convert time_stamp to a datetime object
@@ -102,7 +113,9 @@ def getAirNowSensorData(api_key):
 api_key_purple = "B276397E-A658-11ED-B6F4-42010A800007"
 api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 #getAirNowSensorData(api_key_air)
-sensor = 104950
+
+
+#sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
 inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
                       "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
@@ -112,14 +125,15 @@ input_sensors = inputData(inputDictionaryADB)
 # Retrieve sensor data and store it in a dataframe
 sensor_data = []
 #Can be any date and time in EPOCH time. 
-starttime = 1646189608
-getPurpleAirSensorData(sensor, api_key_purple, starttime)
-#for sensor in input_sensors:
-    #pm25_value = 
-    ### 'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
-        #'start_time': convert_timestamp_to_est(pm25_value[2])})
-   # print(pm25_value[1] - pm25_value[2])
-    #print(pm25_value)
+starttime = user_start_time()
+
+
+for sensor in input_sensors:
+    getPurpleAirSensorData(sensor, api_key_purple, starttime)
+    ##'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
+    #start_time': convert_timestamp_to_est(pm25_value[2])})
+   #print(pm25_value[1] - pm25_value[2])
+   # print(pm25_value)
     
 
 #df = pd.DataFrame(sensor_data)
