@@ -32,8 +32,12 @@ def user_start_time( ):
     start_year= int(input ("Enter the Start year: ")) 
     start_month= int(input("Enter Start Month: "))
     start_day= int(input("Enter Start Day: "))
+    
     dt = datetime(start_year, start_month, start_day, 0, 0, 0)
-    return (calendar.timegm(dt.timetuple()))
+    epoch_time = int(dt.timestamp())
+    return (epoch_time)
+   
+
     
     
 
@@ -117,25 +121,31 @@ api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 
 #sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
-inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
-                      "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
-                      "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
+inputDictionaryADB = {"NASA_AQCS_45":104950, #"NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
+                      #"NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
+                      #"NASA_AQCS_91":29257, "NASA_AQCS_55":47573
+}
 input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
 sensor_data = []
 #Can be any date and time in EPOCH time. 
 starttime = user_start_time()
+day = 1 
+while day < 7: 
+     for sensor in input_sensors:
+            print(starttime)
+            getPurpleAirSensorData(sensor, api_key_purple, starttime)
+     starttime  += 3 * 24 * 60 * 60
+     day = day + 3
 
-
-for sensor in input_sensors:
-    getPurpleAirSensorData(sensor, api_key_purple, starttime)
-    ##'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
-    #start_time': convert_timestamp_to_est(pm25_value[2])})
-   #print(pm25_value[1] - pm25_value[2])
-   # print(pm25_value)
     
-
+       
+        #'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
+        #start_time': convert_timestamp_to_est(pm25_value[2])})
+        #print(pm25_value[1] - pm25_value[2])
+        #print(pm25_value)
+   
 #df = pd.DataFrame(sensor_data)
 #print(df)
 # Display the data using a plotly scatter plot
