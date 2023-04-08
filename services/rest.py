@@ -9,8 +9,8 @@
 
 ## Todo 4/6 
 #*Make a loop to implement the new API end point for historical data.  
-#Convert the timestamp from EPOCH time
-#get 365 days of data for all purple air sensors
+#*Convert the timestamp from EPOCH time
+#*get 365 days of data for all purple air sensors
 #Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
 #create new data column and adjudt PM2.5 using the EPA approved correction factor 
 #plot adjusted data for a given time period 
@@ -26,6 +26,11 @@ import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
 import calendar
+import json 
+from json import json_normalize
+
+
+
 
 #User start date converted from month day year 
 def user_start_time( ):
@@ -87,12 +92,8 @@ def getPurpleAirSensorData(sensor, api_key, start_timestamp):
     # We successfully retrieved the sensor data
     if response.status_code == 200:
         data = response.json()
-        print(data)
-        #pm = data['sensor']['stats']['pm2.5'] 
-        #time_stamp = data['time_stamp']
-        #start_time = get_start_time(data['time_stamp'])
-        #print(start_time)
-        #return pm, time_stamp, start_time
+        df = pd.json_normalize(data)
+        return data
 
 def getAirNowSensorData(api_key):
 
@@ -106,8 +107,7 @@ def getAirNowSensorData(api_key):
     response = requests.get(url2)
     if response.status_code == 200:
         # parse the JSON response
-        data = response.json()
-        # print the data
+        print (data)
         #print(data)
 
     
@@ -135,7 +135,9 @@ day = 0
 while day < 7: 
      for sensor in input_sensors:
             print(starttime)
-            getPurpleAirSensorData(sensor, api_key_purple, starttime)
+            data = getPurpleAirSensorData(sensor, api_key_purple, starttime)
+            #df = pd.read_json(data, orient ='index')
+            print(df.head())
      starttime  += 3 * 24 * 60 * 60
      day = day + 3
 
