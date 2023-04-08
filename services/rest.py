@@ -121,17 +121,17 @@ api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 
 #sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
-inputDictionaryADB = {"NASA_AQCS_45":104950, #"NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
-                      #"NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
-                      #"NASA_AQCS_91":29257, "NASA_AQCS_55":47573
-}
+inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
+                      "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
+                      "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
 input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
 sensor_data = []
 #Can be any date and time in EPOCH time. 
 starttime = user_start_time()
-day = 1 
+day = 0
+#Increase to 366 
 while day < 7: 
      for sensor in input_sensors:
             print(starttime)
