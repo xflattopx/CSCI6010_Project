@@ -62,7 +62,8 @@ def getPurpleAirSensorData(sensor_index, api_key):
         time_stamp = data['time_stamp']
         start_time = get_start_time(data['time_stamp'])
         print(start_time)
-        return pm, time_stamp, start_time
+        return pm.keys()
+        #return pm, time_stamp, start_time
 
 def getAirNowSensorData(api_key):
 
@@ -108,8 +109,8 @@ for sensor in input_sensors:
 df = pd.DataFrame(sensor_data)
 print(df)
 # Display the data using a plotly scatter plot
-fig = px.line(df, x=time_stamp, y='PM2.5 Value', title='PurpleAir PM 2.5 Sensor Data')
-fig.show()
+#fig = px.line(df, x=time_stamp, y='PM2.5 Value', title='PurpleAir PM 2.5 Sensor Data')
+#fig.show()
 
 
 

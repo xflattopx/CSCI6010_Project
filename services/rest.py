@@ -25,6 +25,8 @@ import pandas as pd
 import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
+import json 
+
 
 
 
@@ -91,11 +93,13 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
     # We successfully retrieved the sensor data
     if response.status_code == 200:
         data = response.json()
-        pm = data['sensor']['stats']['pm25_value'] 
+        pm = data['sensor_index']
         time_stamp = data['time_stamp']
         start_time = get_start_time(data['time_stamp'])
         print(start_time)
         return pm, time_stamp, start_time
+        
+
 
 def getAirNowSensorData(api_key):
 
@@ -130,16 +134,17 @@ input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
 sensor_data = []
-df = pd.DataFrame(sensor_data, columns=['sensor', 'PM2.5 Value', 'time_stamp', 'start_time'])
+
 #Can be any date and time in EPOCH time. 
 starttime = user_start_time()
 day = 0
 #Increments through a given set of days.
-while day < 7: 
+while day < 4: 
      for sensor in input_sensors:
+            
             pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
 
-            df.append({'Sensor ID': sensor, 'PM2.5 Value': pm25_value[0], 
+            sensor_data.append({'sensor_index': sensor, 'PM2.5': pm25_value[3], 
             'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
             'start_time': convert_timestamp_to_est(pm25_value[2])})
             print(pm25_value[1] - pm25_value[2])
@@ -147,7 +152,7 @@ while day < 7:
      day = day + 3
 
     
-   
+
 df = pd.DataFrame(sensor_data)
 print(df)
 # Display the data using a plotly scatter plot
