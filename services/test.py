@@ -1,5 +1,3 @@
-
-#####
 ## CSCI6010
 ## Team Dynasty
 ## Chase Moore, Denise Bruce, Adam Wade Foster
@@ -7,43 +5,11 @@
 ## Purple Air -> https://community.purpleair.com/t/making-api-calls-with-the-purpleair-api/180
 ## Air Now -> https://fire.airnow.gov/
 
-## Todo 4/6 
-#*Make a loop to implement the new API end point for historical data.  
-#*Convert the timestamp from EPOCH time
-#*get 365 days of data for all purple air sensors
-#Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
-#create new data column and adjudt PM2.5 using the EPA approved correction factor 
-#plot adjusted data for a given time period 
-#call EPA monitor data 
-#convert to Dataframe 
-#Plot EPA monitor Data 
-#Compare EPA Monitor Data with PM2.5 and Plot.
-#Show a regression analysis and something like MadGans or whatever. 
-
 import requests
 import pandas as pd
 import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
-
-
-
-
-
-
-#User start date converted from month day year 
-def user_start_time( ):
-    start_year= int(input ("Enter the Start year: ")) 
-    start_month= int(input("Enter Start Month: "))
-    start_day= int(input("Enter Start Day: "))
-    
-    dt = datetime(start_year, start_month, start_day, 0, 0, 0)
-    epoch_time = int(dt.timestamp())
-    return (epoch_time)
-   
-
-    
-    
 
 def get_start_time(time_stamp):
     # Convert time_stamp to a datetime object
@@ -78,20 +44,21 @@ def inputData(inputDictionaryADB):
     return sensor_index
 
 
-def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
+def getPurpleAirSensorData(sensor_index, api_key):
     # Define the API endpoint for retrieving the sensor data
-    data_url =  'https://api.purpleair.com/v1/sensors/' + str(sensor_index) + '/history?start_timestamp=' + str(start_timestamp) + '&fields=humidity%2Cpm2.5_atm'
-    ##'https://api.purpleair.com/v1/sensors/history?start_timestamp=1646189608&fields=humidity%2Cpm2.5_atm'+ str(sensor_index) + 
+    data_url = 'https://api.purpleair.com/v1/sensors/' + str(sensor_index)
     headers = {
         "X-API-Key": api_key
     }
+
     # Make the GET request to the API to retrieve the sensor data
     response = requests.get(data_url, headers=headers)
 
     # We successfully retrieved the sensor data
     if response.status_code == 200:
         data = response.json()
-        pm = data['sensor']['stats']['pm25_value'] 
+        #print(data)
+        pm = data['sensor']['stats']['pm2.5'] 
         time_stamp = data['time_stamp']
         start_time = get_start_time(data['time_stamp'])
         print(start_time)
@@ -109,7 +76,8 @@ def getAirNowSensorData(api_key):
     response = requests.get(url2)
     if response.status_code == 200:
         # parse the JSON response
-        print (data)
+        data = response.json()
+        # print the data
         #print(data)
 
     
@@ -120,8 +88,6 @@ api_key_purple = "B276397E-A658-11ED-B6F4-42010A800007"
 api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 #getAirNowSensorData(api_key_air)
 
-
-#sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
 inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
                       "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
@@ -130,28 +96,40 @@ input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
 sensor_data = []
-df = pd.DataFrame(sensor_data, columns=['sensor', 'PM2.5 Value', 'time_stamp', 'start_time'])
-#Can be any date and time in EPOCH time. 
-starttime = user_start_time()
-day = 0
-#Increments through a given set of days.
-while day < 7: 
-     for sensor in input_sensors:
-            pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
-
-            df.append({'Sensor ID': sensor, 'PM2.5 Value': pm25_value[0], 
-            'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
-            'start_time': convert_timestamp_to_est(pm25_value[2])})
-            print(pm25_value[1] - pm25_value[2])
-     starttime  += 3 * 24 * 60 * 60
-     day = day + 3
-
+for sensor in input_sensors:
+    pm25_value = getPurpleAirSensorData(sensor, api_key_purple)
+    sensor_data.append({'Sensor ID': sensor, 'PM2.5 Value': pm25_value[0], 
+        'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
+        'start_time': convert_timestamp_to_est(pm25_value[2])})
+    print(pm25_value[1] - pm25_value[2])
+    #print(pm25_value)
     
-   
+
 df = pd.DataFrame(sensor_data)
 print(df)
 # Display the data using a plotly scatter plot
-#fig = px.line(df, x=time_stamp, y='PM2.5 Value', title='PurpleAir PM 2.5 Sensor Data')
-#fig.show()
+fig = px.line(df, x=time_stamp, y='PM2.5 Value', title='PurpleAir PM 2.5 Sensor Data')
+fig.show()
 
 
+
+"""Graveyard
+def getAllPurpleAirSensorData(api_key):
+    # Define the API endpoint for retrieving sensor metadata
+    metadata_url = 'https://api.purpleair.com/v1/sensors?location=Raleigh,NC&location_type=0&fields=sensor_index,name,latitude,longitude,pm2.5'
+    headers = {
+        "X-API-Key": api_key
+    }
+    # Make the GET request to the API and include the headers
+    response = requests.get(metadata_url, headers=headers)
+    # Check if the request was successful
+    if response.status_code == 200:
+        # Parse the JSON data from the response
+        data = response.json()
+        # Iterate through the list of sensors and retrieve the data for each sensor
+        for sensor in data['data']:
+            getPurpleAirSensorData(sensor[0], api_key)
+    else:
+        # Print an error message if the request was unsuccessful
+        print("Failed to retrieve sensor metadata. Response code:", response.status_code)
+"""
