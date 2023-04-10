@@ -93,12 +93,14 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
     # We successfully retrieved the sensor data
     if response.status_code == 200:
         data = response.json()
+        keys = data.keys()
         pm = data['sensor_index']
+        con = data['data']
         time_stamp = data['time_stamp']
-        start_time = get_start_time(data['time_stamp'])
-        print(start_time)
-        return pm, time_stamp, start_time
-        
+        start_time = get_start_time(data['start_timestamp'])
+        #print(keys)
+        print(type(data['data']))
+        return pm, con, time_stamp, start_time
 
 
 def getAirNowSensorData(api_key):
@@ -144,14 +146,15 @@ while day < 4:
             
             pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
 
-            sensor_data.append({'sensor_index': sensor, 'PM2.5': pm25_value[3], 
-            'time_stamp': convert_timestamp_to_est(pm25_value[1]), 
-            'start_time': convert_timestamp_to_est(pm25_value[2])})
-            print(pm25_value[1] - pm25_value[2])
+            sensor_data.append({'sensor_index': sensor,
+            'PM2.5': pm25_value[1]})
+            #'time_stamp': convert_timestamp_to_est(pm25_value[2]), 
+            #'start_time': convert_timestamp_to_est(pm25_value[3])})
+            #print(pm25_value[1] - pm25_value[2])
      starttime  += 3 * 24 * 60 * 60
      day = day + 3
 
-    
+    #return pm, con, time_stamp, start_time
 
 df = pd.DataFrame(sensor_data)
 print(df)
