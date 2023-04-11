@@ -95,12 +95,14 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
         data = response.json()
         keys = data.keys()
         pm = data['sensor_index']
-        con = data['data']
+        epoch_ts = data['data'][0]
+        humidity = data['data'][1]
+        pm25_atm = data['data'][2]
         time_stamp = data['time_stamp']
         start_time = get_start_time(data['start_timestamp'])
         #print(keys)
-        print(type(data['data']))
-        return pm, con, time_stamp, start_time
+        #print(type(data['data']))
+        return pm, epoch_ts, humidity, pm25_atm, time_stamp, start_time
 
 
 def getAirNowSensorData(api_key):
@@ -141,16 +143,22 @@ sensor_data = []
 starttime = user_start_time()
 day = 0
 #Increments through a given set of days.
-while day < 4: 
+while day < 3: 
      for sensor in input_sensors:
             
             pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
-
-            sensor_data.append({'sensor_index': sensor,
-            'PM2.5': pm25_value[1]})
-            #'time_stamp': convert_timestamp_to_est(pm25_value[2]), 
-            #'start_time': convert_timestamp_to_est(pm25_value[3])})
-            #print(pm25_value[1] - pm25_value[2])
+            if (len(pm25_value [1])!= 0):
+                #print (pm25_value [1][0])
+                sensor_data.append({ 
+                'sensor_index': sensor,
+                'Epoch_Time_Stamp': pm25_value[1][0],
+                'Humidity': pm25_value[1][1],
+                'PM2.5': pm25_value[1][2],
+                'time_stamp': convert_timestamp_to_est(pm25_value[4]), 
+                'start_time': convert_timestamp_to_est(pm25_value[5])})
+                #print(pm25_value[1] - pm25_value[2])
+                print(pm25_value)
+            
      starttime  += 3 * 24 * 60 * 60
      day = day + 3
 
@@ -159,7 +167,7 @@ while day < 4:
 df = pd.DataFrame(sensor_data)
 print(df)
 # Display the data using a plotly scatter plot
-#fig = px.line(df, x=time_stamp, y='PM2.5 Value', title='PurpleAir PM 2.5 Sensor Data')
-#fig.show()
+fig = px.line(df, x='Epoch_Time_Stamp', y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
+fig.show()
 
 
