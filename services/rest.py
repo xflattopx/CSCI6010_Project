@@ -189,11 +189,15 @@ while day < 3:
      day = day + 3
 
     #return pm, con, time_stamp, start_time
-
+thingy = []
 df = pd.DataFrame(sensor_data)
-print(df['PM2.5'][0])
+# pm_25 = df['PM2.5']
+# sTime = df['start_time']
+# print(sTime)
+# thingy = thingy.append({'pm_25': pm_25,'sTime': sTime})
+# new_df = pd.DataFrame(thingy)
 # Display the data using a plotly scatter plot
-fig = px.scatter(df, x='start_time' , y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
+fig = px.scatter(df, x='Epoch_Time_Stamp' , y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
 fig.show()
 
 
