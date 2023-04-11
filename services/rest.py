@@ -94,15 +94,42 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
     if response.status_code == 200:
         data = response.json()
         keys = data.keys()
+        epoch_ts = []
+        humidity = []
+        pm25_atm = []
         pm = data['sensor_index']
-        epoch_ts = data['data'][0]
-        humidity = data['data'][1]
-        pm25_atm = data['data'][2]
-        time_stamp = data['time_stamp']
+        count = 0
+        for c1 in data['data'][0]:
+            #print(count)
+            if(count == 0):
+                epoch_ts.append(c1)
+            elif(count == 1):
+                humidity.append(c1)
+            elif(count == 2):
+                pm25_atm.append(c1)
+            count += 1
+        count = 0
+        for c2 in data['data'][1]:
+            if(count == 0):
+                epoch_ts.append(c2)
+            elif(count == 1):
+                humidity.append(c2)
+            elif(count == 2):
+                pm25_atm.append(c2)
+            count += 1
+        count = 0
+        for c3 in data['data'][2]:
+            if(count == 0):
+                epoch_ts.append(c3)
+            elif(count == 1):
+                humidity.append(c3)
+            elif(count == 2):
+                pm25_atm.append(c3)
+            count += 1
         start_time = get_start_time(data['start_timestamp'])
         #print(keys)
         #print(type(data['data']))
-        return pm, epoch_ts, humidity, pm25_atm, time_stamp, start_time
+        return pm, epoch_ts, humidity, pm25_atm, start_time
 
 
 def getAirNowSensorData(api_key):
@@ -117,8 +144,8 @@ def getAirNowSensorData(api_key):
     response = requests.get(url2)
     if response.status_code == 200:
         # parse the JSON response
-        print (data)
-        #print(data)
+        #print (data)
+        print(data)
 
     
 
@@ -131,9 +158,9 @@ api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 
 #sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
-inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
-                      "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
-                      "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
+inputDictionaryADB = {"NASA_AQCS_45":104950 }#"NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
+                    #    "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
+                    #    "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
 input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
@@ -147,17 +174,16 @@ while day < 3:
      for sensor in input_sensors:
             
             pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
-            if (len(pm25_value [1])!= 0):
+            if (len(pm25_value[1])!= 0):
                 #print (pm25_value [1][0])
                 sensor_data.append({ 
                 'sensor_index': sensor,
-                'Epoch_Time_Stamp': pm25_value[1][0],
-                'Humidity': pm25_value[1][1],
-                'PM2.5': pm25_value[1][2],
-                'time_stamp': convert_timestamp_to_est(pm25_value[4]), 
-                'start_time': convert_timestamp_to_est(pm25_value[5])})
+                'Epoch_Time_Stamp': pm25_value[1],
+                'Humidity': pm25_value[2],
+                'PM2.5': pm25_value[3],
+                'start_time': convert_timestamp_to_est(pm25_value[4])})
                 #print(pm25_value[1] - pm25_value[2])
-                print(pm25_value)
+                #print(pm25_value)
             
      starttime  += 3 * 24 * 60 * 60
      day = day + 3
@@ -165,9 +191,9 @@ while day < 3:
     #return pm, con, time_stamp, start_time
 
 df = pd.DataFrame(sensor_data)
-print(df)
+print(df['PM2.5'][0])
 # Display the data using a plotly scatter plot
-fig = px.line(df, x='Epoch_Time_Stamp', y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
+fig = px.scatter(df, x='start_time' , y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
 fig.show()
 
 
