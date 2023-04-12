@@ -80,9 +80,9 @@ def inputData(inputDictionaryADB):
     return sensor_index
 
 
-def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
+def getPurpleAirSensorData(sensor_index, api_key, ): #start_timestamp
     # Define the API endpoint for retrieving the sensor data
-    data_url =  'https://api.purpleair.com/v1/sensors/' + str(sensor_index) + '/history?start_timestamp=' + str(start_timestamp) + '&fields=humidity%2Cpm2.5_atm'
+    data_url =  'https://api.purpleair.com/v1/sensors/'+ str(sensor_index) +'/history?start_timestamp=1641013200&end_timestamp=1672549140&average=1440&fields=humidity%2Cpm2.5_atm'
     ##'https://api.purpleair.com/v1/sensors/history?start_timestamp=1646189608&fields=humidity%2Cpm2.5_atm'+ str(sensor_index) + 
     headers = {
         "X-API-Key": api_key
@@ -90,9 +90,11 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
     # Make the GET request to the API to retrieve the sensor data
     response = requests.get(data_url, headers=headers)
 
+
     # We successfully retrieved the sensor data
     if response.status_code == 200:
         data = response.json()
+        
         keys = data.keys()
         epoch_ts = []
         humidity = []
@@ -129,7 +131,7 @@ def getPurpleAirSensorData(sensor_index, api_key, start_timestamp):
         start_time = get_start_time(data['start_timestamp'])
         #print(keys)
         #print(type(data['data']))
-        return pm, epoch_ts, humidity, pm25_atm, start_time
+        return data
 
 
 def getAirNowSensorData(api_key):
@@ -167,37 +169,46 @@ input_sensors = inputData(inputDictionaryADB)
 sensor_data = []
 
 #Can be any date and time in EPOCH time. 
-starttime = user_start_time()
+#starttime = user_start_time()
 day = 0
 #Increments through a given set of days.
-while day < 3: 
-     for sensor in input_sensors:
+#while day
+for sensor in input_sensors:
             
-            pm25_value = getPurpleAirSensorData(sensor, api_key_purple, starttime)
-            if (len(pm25_value[1])!= 0):
+    pm25_value = getPurpleAirSensorData(sensor, api_key_purple) #starttime)
+    data = pm25_value
+    data2 =data['data']
+    df = pd.DataFrame(data2, columns= ['Time', "Humidity", "PM25"])
+    df["Time"] = df["Time"].apply(convert_timestamp_to_est)
+    print(df)
+
+            #if (len(pm25_value[1])!= 0):
                 #print (pm25_value [1][0])
-                sensor_data.append({ 
-                'sensor_index': sensor,
-                'Epoch_Time_Stamp': pm25_value[1],
-                'Humidity': pm25_value[2],
-                'PM2.5': pm25_value[3],
-                'start_time': convert_timestamp_to_est(pm25_value[4])})
+                #sensor_data.append({ 
+                #'sensor_index': sensor,
+                #'Epoch_Time_Stamp': (pm25_value[1]),
+                #'Humidity': pm25_value[2],
+                #'PM2.5': pm25_value[3],
+                #'start_time': convert_timestamp_to_est(pm25_value[4])})
                 #print(pm25_value[1] - pm25_value[2])
                 #print(pm25_value)
             
-     starttime  += 3 * 24 * 60 * 60
-     day = day + 3
+     #starttime  += 3 * 24 * 60 * 60
+     #day = day + 3
 
     #return pm, con, time_stamp, start_time
-thingy = []
-df = pd.DataFrame(sensor_data)
+#thingy = []
+#df = pd.DataFrame(sensor_data)
+#df2 = df.explode(['Epoch_Time_Stamp', 'Humidity', "PM2.5"])
+#df2["Epoch_Time_Stamp"] = df2["Epoch_Time_Stamp"].apply(convert_timestamp_to_est)
+#print (df2)
 # pm_25 = df['PM2.5']
 # sTime = df['start_time']
 # print(sTime)
 # thingy = thingy.append({'pm_25': pm_25,'sTime': sTime})
 # new_df = pd.DataFrame(thingy)
 # Display the data using a plotly scatter plot
-fig = px.scatter(df, x='Epoch_Time_Stamp' , y='PM2.5', title='PurpleAir PM 2.5 Sensor Data')
+fig = px.scatter(df, x='Time' , y='PM25', title='PurpleAir PM 2.5 Sensor Data')
 fig.show()
 
 
