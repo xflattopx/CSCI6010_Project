@@ -11,7 +11,7 @@
 #*Make a loop to implement the new API end point for historical data.  
 #*Convert the timestamp from EPOCH time
 #*get 365 days of data for all purple air sensors
-#Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
+#*Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
 #create new data column and adjudt PM2.5 using the EPA approved correction factor 
 #plot adjusted data for a given time period 
 #call EPA monitor data 
@@ -181,6 +181,7 @@ for sensor in input_sensors:
     data2 =data['data']
     df = pd.DataFrame(data2, columns= ['Time', "Humidity", "PM25"])
     df["Time"] = df["Time"].apply(convert_timestamp_to_est)
+    df.sort_values('PM25')  
     print(df)
     fig = px.scatter(df, x='Time' , y='PM25', title= str(sensor)+ ' PurpleAir PM 2.5 Sensor Data')
     fig.show()
