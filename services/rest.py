@@ -26,7 +26,7 @@ import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
 import json 
-
+import seaborn as sb
 
 
 
@@ -161,9 +161,9 @@ api_key_air = "625E165E-03E8-4317-B7F7-1BDB0290A448"
 
 #sensor = 104950
 # ADB_This will be an input on website rather than a dictionary.  For now it will be hard coded
-inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633}
-                    #    "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
-                    #    "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
+inputDictionaryADB = {"NASA_AQCS_45":104950, "NASA_AQCS_36":47535, "NASA_AQCS_21":47497, "NASA_AQCS_87":47633,
+                      "NASA_AQCS_17":47489, "NASA_AQCS_12":47479, "NASA_AQCS_19":47493, "NASA_AQCS_7":47469,
+                     "NASA_AQCS_91":29257, "NASA_AQCS_55":47573}
 input_sensors = inputData(inputDictionaryADB)
 
 # Retrieve sensor data and store it in a dataframe
@@ -173,17 +173,46 @@ for sensor in input_sensors:
     pm25_value = getPurpleAirSensorData(sensor, api_key_purple) #starttime)
     data = pm25_value
     data2 =data['data']
-    df1 = pd.DataFrame(data2, columns= ['Time', "Humidity", "PM25"])
-    df1["Time"] = df1["Time"].apply(convert_timestamp_to_est)
-    df1[['Date', 'Time1']] = df1['Time'].str.split(' ', expand= True)
-    df1['Sensor'] = sensor
+    df1 = pd.DataFrame(data2, columns= ['Time_'+str(sensor), "Humidity_"+str(sensor), "PM25_"+str(sensor)])
+    df1['Time_'+str(sensor)] = df1['Time_'+str(sensor)].apply(convert_timestamp_to_est)
+    df1[['Date_'+str(sensor), 'Time1_'+ str(sensor)]] = df1['Time_'+str(sensor)].str.split(' ', expand= True)
+
+    
     sensor_data.append(df1) # append each dataframe to the list
 
 # concatenate all dataframes in the list into one dataframe
-    result = pd.concat(sensor_data, ignore_index=True)
-    print(result)
-        #fig = px.line(vertical_concat, x='Date' , y='PM25', title= str(sensor)+ ' PurpleAir PM 2.5 Sensor Data')
-        #fig2 = px.scatter(vertical_concat, x='Date' , y='PM25', title= str(sensor)+ ' PurpleAir PM 2.5 Sensor Data')
+    result = pd.concat(sensor_data, axis=1)
+
+#drop columns 
+result = result.drop(columns=['Time_104950' , 'Time1_104950', 'Time_47535', 'Date_47535' ,
+                      'Time1_47535', 'Time_47497', 'Date_47497' , 'Time1_47497', 
+                      'Time_47633', 'Date_47633' , 'Time1_47633',
+                     'Time_47479', 'Date_47479' , 'Time1_47479',
+                      'Time_47469', 'Date_47469' , 'Time1_47469', 
+                      'Time_47493', 'Date_47493' , 'Time1_47493',
+                      'Time_29257', 'Date_29257' , 'Time1_29257', 
+                      'Time_47573', 'Date_47573' , 'Time1_47573',
+                      'Time_47489', 'Date_47489' , 'Time1_47489'
+                      
+                      ])
+
+
+
+print(result)
+   
+
+
+    
+# time series plot for multiple columns
+sb.lineplot(x='Date_104950', y='PM25_104950', data=result)
+sb.lineplot(x='Date_104950', y='PM25_47573', data=result)
+# set label
+px.ylabel("")
+
+px.show
+    
+    #fig = px.line(result, x='Date' , y='PM25', title= str(sensor)+ ' PurpleAir PM 2.5 Sensor Data')
+    #fig2 = px.scatter(result, x='Date' , y='PM25', title= str(sensor)+ ' PurpleAir PM 2.5 Sensor Data')
 
         #fig.update_xaxes(range=[0, 366], tickmode='array', tickvals=[2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35, 38, 41, 44, 47, 50, 53, 56, 59, 62, 65, 68, 71, 74, 77, 80, 83, 86, 89, 92, 95, 98, 101, 104, 107, 110, 113, 116, 119, 122, 125, 128, 131, 134, 137, 140, 143, 146, 149, 152, 155, 158, 161, 164, 167, 170, 173, 176, 179, 182, 185, 188, 191, 194, 197, 200, 203, 206, 209, 212, 215, 218, 221, 224, 227, 230, 233, 236, 239, 242, 245, 248, 251, 254, 257, 260, 263, 266, 269, 272, 275, 278, 281, 284, 287, 290, 293, 296, 299, 302, 305, 308, 311, 314, 317, 320, 323, 326, 329, 332, 335, 338, 341, 344, 347, 350, 353, 356, 359, 362, 365])
         #fig.show()
