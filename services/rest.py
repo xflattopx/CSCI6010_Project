@@ -59,8 +59,10 @@ def getPurpleAirSensorData(sensor_index, api_key): #start_timestamp
         df['sensor_index'] = sensor_index
         df['Time'] = df['Time'].apply(convert_timestamp_to_est)
         df[['Date', 'Time1']] = df['Time'].str.split(' ', expand=True)
+        df[['Humidity', 'PM25']] = df[['Humidity', 'PM25']].apply(pd.to_numeric)
+        df['Corrected_PM'] = (0.52 * df['PM25']) - 0.085 * df['Humidity'] + 5.71
         df = df.sort_values('Date')
-        #print(df)
+        
         return df
 
 def plotSensorData(sensor_data):
@@ -71,8 +73,10 @@ def plotSensorData(sensor_data):
     sensor_index_col = [sensor_data[i]['sensor_index'][0] for i in range(len(sensor_data)) for _ in range(len(sensor_data[i]))]
     df['Sensor'] = sensor_col
     df['Sensor Index'] = sensor_index_col
+    print(len(df))
+    print(df)
     # Plot the data
-    fig = px.line(df, x='Date', y='PM25', color='Sensor', title='PurpleAir PM 2.5 Sensor Data')
+    fig = px.line(df, x='Date', y='Corrected_PM', color='Sensor', title='PurpleAir PM 2.5 Sensor Data')
     fig.show()
 
 # Define the sensor indices
