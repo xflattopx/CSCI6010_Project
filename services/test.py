@@ -23,9 +23,11 @@ def getAirNowSensorData(api_key):
         df = df.reset_index()
 
 # drop the rows with missing values (i.e. the first 23 rows)
-        df = df.dropna()
-# resample the dataframe by 24 hour intervals and compute the average of PM2.5 values
-        
+        df = df.drop(['index', 'Latitude', 'Longitude', 'Parameter', 'Unit',
+        'AQI', 'Category', 'SiteName', 'AgencyName',
+       'FullAQSCode', 'IntlAQSCode'], axis = 1)
+# resample the datframe by 24 hour intervals and compute the average of PM2.5 values
+        #df.drop(['Latitude', 'Longitude', 'StieName', Agenc], axis=1)
         print(df)
         
 
