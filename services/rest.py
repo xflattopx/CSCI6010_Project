@@ -12,20 +12,23 @@
 #*Convert the timestamp from EPOCH time
 #*get 365 days of data for all purple air sensors
 #*Send all retrieved data to a dataframe with columns for time stamp, PM2.5 concentration, and Humidity 
-#create new data column and adjudt PM2.5 using the EPA approved correction factor 
-#plot adjusted data for a given time period 
-#call EPA monitor data 
-#convert to Dataframe 
-#Plot EPA monitor Data 
-#Compare EPA Monitor Data with PM2.5 and Plot.
+#*create new data column and adjudt PM2.5 using the EPA approved correction factor 
+#*plot adjusted data for a given time period 
+#*call EPA monitor data 
+#*convert to Dataframe 
+#*Plot EPA monitor Data 
+#*Compare EPA Monitor Data with PM2.5 and Plot.
 #Show a regression analysis and something like MadGans or whatever. 
 
+from networkx import goldberg_radzik
 import requests
 import pandas as pd
 import plotly.express as px
 import pytz 
 from datetime import datetime, timedelta
 import json 
+import plotly.graph_objects as go
+
 
 
 def convert_timestamp_to_est(timestamp):
@@ -41,7 +44,35 @@ def convert_timestamp_to_est(timestamp):
     converted_timestamp = est_datetime.strftime('%Y-%m-%d %H:%M:%S')
     
     return converted_timestamp
+def getAirNowSensorData(api_key):
+    #
 
+    url = 'https://www.airnowapi.org/aq/data/?startDate=2022-01-01T00&endDate=2022-12-31T23&parameters=PM25&BBOX=-78.647643,35.731814,-78.460876,35.941117&dataType=A&format=application/json&verbose=1&monitorType=0&includerawconcentrations=1&API_KEY='+ str(api_key)     # make the API request
+    
+    response = requests.get(url)
+
+    if response.status_code == 200:
+
+#         # parse the JSON response
+        data_an = response.json()
+        df = pd.json_normalize(data_an)
+        
+
+# reset the index to make the "UTC" column a regular column again
+        df = df.reset_index()
+
+# drop the rows with missing values (i.e. the first 23 rows)
+        df = df.drop(['index', 'Latitude', 'Longitude', 'Parameter', 'Unit',
+        'AQI', 'Category', 'SiteName', 'AgencyName',
+       'FullAQSCode', 'IntlAQSCode'], axis = 1)
+        df['Humidity']= 0
+        df[['Date', 'Time']] = df['UTC'].str.split('T', expand=True)
+        df = df.drop(df[df['RawConcentration'] == -999.0].index)
+        #df["Time"] = df['Time'].apply(pd.to_numeric)
+        df_mean = df.groupby('Date')['RawConcentration'].mean().reset_index()
+        df.to_csv('raw')
+# return the resulting dataframe
+        return(df_mean)
 
 def getPurpleAirSensorData(sensor_index, api_key): #start_timestamp
     # Define the API endpoint for retrieving the sensor data
@@ -65,9 +96,10 @@ def getPurpleAirSensorData(sensor_index, api_key): #start_timestamp
         
         return df
 
-def plotSensorData(sensor_data):
+def plotSensorData(sensor_data, airnow_data):
     # Concatenate all dataframes into one
     df = pd.concat(sensor_data, ignore_index=True)
+    df2 = airnow_data
     # Add a new column to identify which sensor each row belongs to
     sensor_col = [f"Sensor {i+1}" for i in range(len(sensor_data)) for _ in range(len(sensor_data[i]))]
     sensor_index_col = [sensor_data[i]['sensor_index'][0] for i in range(len(sensor_data)) for _ in range(len(sensor_data[i]))]
@@ -76,20 +108,36 @@ def plotSensorData(sensor_data):
     print(len(df))
     print(df)
     # Plot the data
-    fig = px.line(df, x='Date', y='Corrected_PM', color='Sensor', title='PurpleAir PM 2.5 Sensor Data')
+    fig = px.line(df, x='Date', y='Corrected_PM', color='Sensor', title='PurpleAir PM 2.5 Sensor Data and MillBrook AirNow Site')
+    fig.add_trace(
+        go.Scatter(
+         x=df2['Date'],
+         y=df2['RawConcentration'],
+         mode='lines+markers',
+         line=dict(color='black', width=1),
+         marker=dict(color='black', size=5)
+    )
+)
+
     fig.show()
 
 # Define the sensor indices
 sensor_indices = [104950, 47535,47497,47633,47489,47479,47493,47469,29257,47573] #purple air sensor indicies.
 api_key_purple = "B276397E-A658-11ED-B6F4-42010A800007"
+airnow_api =  '1A90A9DF-368D-45C1-BF6B-14701DC449D1'
 # Retrieve sensor data and store it in a list of dataframes
 sensor_data = []
 for sensor in sensor_indices:
     df = getPurpleAirSensorData(sensor, api_key_purple)
+
     sensor_data.append(df)
 
+
+airnow_data = getAirNowSensorData(airnow_api)
+
+
 # Plot the data
-plotSensorData(sensor_data)
+plotSensorData(sensor_data,airnow_data)
 
 
 
